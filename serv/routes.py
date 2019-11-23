@@ -1,10 +1,9 @@
-import app
-import db
-import os
+from serv import app
 from werkzeug.utils import secure_filename
-from flask import request, jsonify, redirect
+from flask import request, jsonify
 from flask_cors import cross_origin
-from emo_rec import models
+from serv.emo_rec import models
+import os
 
 
 @app.route('/', methods=['POST'])
