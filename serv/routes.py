@@ -54,7 +54,7 @@ def file_to_hash(file):
 @cross_origin(origin='*')
 def push():
     if not 'file' in request.files:
-        return jsonify({'error': 'no file'}), 400
+        return jsonify({'error': 'no file'}), 402
     img_file = request.files['file']
     img_name = secure_filename(img_file.filename)
     img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], img_name))
