@@ -8,14 +8,14 @@ import hashlib
 import os
 
 emotions = {
-    'sad': '😞',
-    'depressed': '😩',
-    'neutral': '😐',
-    'glad': '😀',
-    'happy': '😁',
-    'angry': '😡',
-    'astonished': '😦',
-    'surprise': '😮'
+    'sad': '1',
+    'depressed': '2',
+    'neutral': '3',
+    'glad': '4',
+    'happy': '5',
+    'angry': '6',
+    'astonished': '7',
+    'surprise': '8'
 }
 
 BLOCK_SIZE = 65536
@@ -24,11 +24,11 @@ BLOCK_SIZE = 65536
 def determine(path):
     values = [model.predict(path) for model in models]
     result = 0
-    if abs(values[0]['angry'] - values[0]['happiness']) < 30:
+    if abs(values[0]['anger'] - values[0]['happiness']) < 30:
         result = 'neutral'
-    elif values[0]['angry'] > values[0]['happiness']:
-        if values[0]['angry'] > 75:
-            result = 'angry' if values[1]['sad'] < 40 else 'depressed'
+    elif values[0]['anger'] > values[0]['happiness']:
+        if values[0]['anger'] > 75:
+            result = 'angry' if values[1]['sadness'] < 40 else 'depressed'
         else:
             result = 'sad'
     else:
@@ -60,17 +60,17 @@ def push():
     img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], img_name))
 
     hashcode = file_to_hash(app.config['UPLOAD_FOLDER'] + '/' + img_name)
-    os.remove(app.config['UPLOAD_FOLDER'] + '/' + img_name)
 
     try:
-        does_exist = db.check_query(hashcode)
+        does_exist = db.check_write(hashcode)
     except InvalidRequestError:
         return jsonify({'error': 'db_error'}), 400
 
     if not does_exist:  # )))
-        img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], hashcode))
         resp = determine(app.config['UPLOAD_FOLDER'] + '/' + img_name)
+        db.add_write(hashcode, resp)
     else:
+        os.remove(app.config['UPLOAD_FOLDER'] + '/' + img_name)
         resp = does_exist
 
-    return jsonify({'resp': resp}), 200
+    return jsonify(emotions[resp]), 200

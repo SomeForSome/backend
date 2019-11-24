@@ -3,7 +3,7 @@ from flask_cors import CORS
 from config import Config
 from serv.db import DBConnector
 
-UPLOAD_FOLDER = './photos'
+UPLOAD_FOLDER = '/home/kmx/hackio/backend/serv/photos'
 
 app = Flask(__name__)
 CORS(app, resources={r'/.*': {'origins': '*'}})

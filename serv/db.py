@@ -9,8 +9,8 @@ class InvalidRequestError(Exception):
 class DBConnector:
 
     create_query = 'CREATE TABLE faces (' \
-                   'hashcode VARCHR(256) PRIMARY KEY ,' \
-                   'emo_id INT)'
+                   'hashcode VARCHAR(256) PRIMARY KEY ,' \
+                   'emo_id VARCHAR(256) )'
 
     check_query = 'SELECT * FROM faces WHERE hashcode = %s'
     insert_query = 'INSERT INTO faces (hashcode, emo_id) VALUES (%s, %s)'
@@ -20,6 +20,7 @@ class DBConnector:
         self._dbname = config.get('DB_NAME')
         self._dbuser = config.get('DB_USER')
         self._dbhost = config.get('DB_HOST')
+        self._dbpass = config.get('DB_PASS')
         self._create_table()
 
     def _db_connect(self):
@@ -27,6 +28,7 @@ class DBConnector:
             dbname=self._dbname,
             user=self._dbuser,
             host=self._dbhost,
+            password=self._dbpass
         )
 
     def _create_table(self):
@@ -45,12 +47,12 @@ class DBConnector:
         conn = self._db_connect()
         cursor = conn.cursor()
         try:
-            cursor.execute(self.check_query, [hashcode])
+            cursor.execute(self.check_query, [hashcode, ])
             result = cursor.fetchall()
             conn.commit()
-            result = False if len(result) > 0 else result[0]['emo_id']
-        except Error:
-            raise InvalidRequestError
+            result = result[0][1]
+        except IndexError:
+            result =  False
         finally:
             cursor.close()
             conn.close()
@@ -61,7 +63,6 @@ class DBConnector:
         cursor = conn.cursor()
         try:
             cursor.execute(self.insert_query, [path, emo_id])
-            result = cursor.fetchone()[0]
             conn.commit()
         except Error:
             raise InvalidRequestError
